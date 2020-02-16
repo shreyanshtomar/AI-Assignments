@@ -47,30 +47,30 @@ class TSP{
                 i++;
             }
         }
-            int calculateDistance(int x1, int x2, int y1, int y2){
-                return int(sqrt(pow(x1-x2,2)+pow(y1-y2,2)) + 0.5); //*****
-            }
+        int calculateDistance(int x1, int x2, int y1, int y2){
+            return int(sqrt(pow(x1-x2,2)+pow(y1-y2,2)) + 0.5); //*****
+        }
 
-            void createOriginalDistanceGraph(){
-                for (int i = 0; i < numCities; i++)
+        void createOriginalDistanceGraph(){
+            for (int i = 0; i < numCities; i++)
+            {
+                originalGraph[i][i] = 0;
+                adjacencymat[i][i] = 0;
+                for (int j = i+1; j < numCities; j++)
                 {
-                    originalGraph[i][i] = 0;
-                    adjacencymat[i][i] = 0;
-                    for (int j = i+1; j < numCities; j++)
-                    {
-                        /*Symmetric Tsp*/
-                        originalGraph[i][j] = calculateDistance(points[i][0],points[j][0],points[i][1],points[j][1]);
-                        originalGraph[j][i] = originalGraph[i][j];
-                        adjacencymat[i][j]=0;
-                        adjacencymat[j][i]=0;
-                        minimumSpanningTree[i][j]=INT_MAX;
-                        minimumSpanningTree[j][i]=INT_MAX;
+                    /*Symmetric Tsp*/
+                    originalGraph[i][j] = calculateDistance(points[i][0],points[j][0],points[i][1],points[j][1]);
+                    originalGraph[j][i] = originalGraph[i][j];
+                    adjacencymat[i][j]=0;
+                    adjacencymat[j][i]=0;
+                    minimumSpanningTree[i][j]=INT_MAX;
+                    minimumSpanningTree[j][i]=INT_MAX;
 
-                    }
-                    
                 }
                 
             }
+                
+        }
 
 };
 
@@ -89,23 +89,30 @@ int buildMinimumSpanningTree(vector<int> vertices,vector<char> nodesLeft)
         return 0;
     }
     
-    int pcity[40],pdist[40],minDistance=INT_MAX;
+    int pcity[40],pdist[40],minDistance=INT_MAX; //Parent City, Parent Distance
+
     vector<int>::iterator it1;
     vector<char>::iterator it2;
+
     int i=0;
     string cities;
+
     sort(nodesLeft.begin(),nodesLeft.end());
+
     for(it1=vertices.begin(),it2=nodesLeft.begin();it1!=vertices.end(),it2!=nodesLeft.end();it1++,it2++)
     {
         pcity[i]=*it1; //parent city 
         pdist[i]=INT_MAX; //parent distance;
+
         i++;
         cities+=*it2;
     }
     
     unordered_map<string,int>:: iterator mit;//iterator for the hash map for the MST
     //So that we don't have to calculate the MST length again and again for each path.
+
     mit=mstMap.find(cities);
+
     if(mit!=mstMap.end())
     {
         return mit->second;
@@ -114,6 +121,7 @@ int buildMinimumSpanningTree(vector<int> vertices,vector<char> nodesLeft)
     int newCity=pcity[size-1];//i.e we are making the last city as the newCity for finding the MST
     int thisDistance;
     int length=0,minIndex;
+
     for(int m=size-1;m>0;m--)
     {
         minDistance=INT_MAX;
@@ -129,12 +137,79 @@ int buildMinimumSpanningTree(vector<int> vertices,vector<char> nodesLeft)
         pcity[minIndex]=pcity[m-1];
         pdist[minIndex]=pdist[m-1];   
     }
+
     mstMap[cities]=length;
     return length;
-    
 }
 
+int calculateHeuristic(vi vertices, vector<char> nodesLeft, int currentCityForExpansion){
+        /*This function calculates the Heuristic value
+        for the remaining path from the current city to the remaining unvisited cities to the source city.*/
+    int size = vertices.size();
 
+    if(size == 1){
+        auto itt = vertices.begin();
+        return distance(currentCityForExpansion, *itt) + distance(*itt, 0);
+    }
+
+    if(size == 0){
+        return distance(currentCityForExpansion,0);
+    }
+
+    int pcity[40],pdist[40], minDistance=INT_MAX;
+    vector<int>::iterator it1;
+
+    int i = 0;
+    string cities;
+    
+    for (it1=vertices.begin(); it1 != vertices.end(); it1++)
+    {
+        pcity[i] = *it1; //Parent City
+        pdist[i] = INT_MAX; //Parent Distance
+        i++;
+    }
+    int mst;
+
+    mst = buildMinimumSpanningTree(vertices, nodeLeft);
+
+    int nearestUnvisitedCityDistance=INT_MAX;
+    int nearestToSource=INT_MAX;
+    int thisDistance1,thisDistance2;
+
+    for (int i = 0; i < size; i++)
+    {
+        thisDistance1 = distance(pcity[i],currentCityForExpansion); //Distance from Unvisited City to current city for Expansion
+        thisDistance2 = distance(pcity[i],0) //  Distance from the source
+
+        if (thisDistance1 < nearestUnvisitedCityDistance)
+        {
+            nearestUnvisitedCityDistance = thisDistance1;
+        }
+        if (thisDistance2 < nearestToSource)
+        {
+            nearestToSource = thisDistance1;
+        }
+    }
+
+    int h = mst + nearestToSource + nearestUnvisitedCityDistance;
+    return h;
+}
+
+int optimumCost = INT_MAX;
+
+Node createNode(int citynum,string pathSoFar,int citiesNotVisited,char name,int hCost,int aCost,int totalCost,string state,vector<int> citiesLeft){
+    /*This function Creates a new City to be explored*/
+
+    Node temp( citynum, pathSoFar, citiesNotVisited, name, hCost,aCost,totalCost,state, citiesLeft);
+    return temp;
+}
+
+int numExpanded=1,totalNumofNodes=1;
+
+string startSearch(){
+    /*This is the main ASTAR Search Function where the nodes are generated and inserted in the Priority Queue! */
+    
+}
 int main(){
     
 }

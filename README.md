@@ -1,4 +1,4 @@
-# TSP
+# 1. TSP
 Travelling Salesman using A*
 
 Initial State: Agent in the start city and has not visited any other city
